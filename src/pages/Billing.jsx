@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table } from "react-bootstrap"; // Bootstrap Table
 import { Pie } from "react-chartjs-2"; // Chart.js Pie Chart
-import { jsPDF } from "jspdf";
 import "chart.js/auto";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
@@ -39,18 +38,6 @@ const Billing = () => {
     ],
   };
 
-  // Generate PDF Report
-  const generateReport = () => {
-    const doc = new jsPDF();
-    doc.text("Billing Report", 20, 10);
-    let y = 20;
-    billingData.forEach((bill, index) => {
-      doc.text(`${index + 1}. Date: ${bill.date} - Amount: ${bill.amount} Ksh - Status: ${bill.status}`, 20, y);
-      y += 10;
-    });
-    doc.save("Billing_Report.pdf");
-  };
-
   return (
     <div className="dashboard-container">
       <Sidebar />
@@ -85,11 +72,6 @@ const Billing = () => {
             <h3>Paid vs Unpaid Bills</h3>
             <Pie data={unpaidBillsChart} />
           </div>
-
-          {/* Download Report Button */}
-          <button className="report-button" onClick={generateReport}>
-            📄 Download Report
-          </button>
         </div>
       </div>
     </div>
