@@ -78,37 +78,6 @@ const Dashboard = () => {
     ],
   };
 
-  const generateReport = async () => {
-    if (typeof window !== "undefined") {
-      // Dynamically import jsPDF to avoid issues during SSR
-      const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF();
-      doc.text("Electricity Consumption Report", 20, 10);
-      let y = 20;
-
-      consumptionData.forEach((item, index) => {
-        doc.text(`${index + 1}. Date: ${item.date} - Usage: ${item.usage} kWh`, 20, y);
-        y += 10;
-      });
-
-      doc.text("Billing History", 20, y + 10);
-      y += 20;
-      billingData.forEach((item, index) => {
-        doc.text(`${index + 1}. Date: ${item.date} - Amount: ${item.amount} Ksh`, 20, y);
-        y += 10;
-      });
-
-      doc.text("Payment History", 20, y + 10);
-      y += 20;
-      paymentData.forEach((item, index) => {
-        doc.text(`${index + 1}. Date: ${item.date} - Amount: ${item.amount} Ksh - Status: ${item.status}`, 20, y);
-        y += 10;
-      });
-
-      doc.save("Customer_Report.pdf");
-    }
-  };
-
   return (
     <div className="dashboard-container">
       <Sidebar />
@@ -141,10 +110,6 @@ const Dashboard = () => {
               <Line data={cumulativePaymentChart} />
             </div>
           </div>
-
-          <button className="report-button" onClick={generateReport}>
-            📄 Download Report
-          </button>
         </div>
       </div>
     </div>
