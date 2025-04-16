@@ -17,7 +17,7 @@ const Dashboard = () => {
 
   const fetchCustomerData = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/dashboard-data");
+      const response = await axios.get("https://kplc-smart-billing.onrender.com/");
       setConsumptionData(response.data.consumption);
       setBillingData(response.data.billing);
       setPaymentData(response.data.payments || []);
