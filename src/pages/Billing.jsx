@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table } from "react-bootstrap"; // Bootstrap Table
 import { Pie } from "react-chartjs-2"; // Chart.js Pie Chart
-import jsPDF from "jspdf"; // PDF Generation
+import { jsPDF } from "jspdf";
 import "chart.js/auto";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
