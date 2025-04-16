@@ -3,10 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  // ✅ Remove or comment out rollupOptions
-  // build: {
-  //   rollupOptions: {
-  //     external: ['jspdf'],
-  //   },
-  // },
+  optimizeDeps: {
+    include: ['jspdf'], // 👈 force include in optimization
+  },
 })
