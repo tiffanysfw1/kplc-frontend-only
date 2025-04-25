@@ -6,6 +6,9 @@ import Sidebar from "../components/Sidebar";
 import "chart.js/auto";
 import "./Dashboard.css";
 
+// ✅ Define your API base URL here
+const apiUrl = "http://localhost:5000"; // Replace with your actual backend URL
+
 const Dashboard = () => {
   const [consumptionData, setConsumptionData] = useState([]);
   const [billingData, setBillingData] = useState([]);
@@ -17,9 +20,9 @@ const Dashboard = () => {
 
   const fetchCustomerData = async () => {
     try {
-      const response = await axios.get("https://kplc-smart-billing.onrender.com/");
-      setConsumptionData(response.data.consumption);
-      setBillingData(response.data.billing);
+      const response = await axios.get(`${apiUrl}/api/dashboard-data`);
+      setConsumptionData(response.data.consumption || []);
+      setBillingData(response.data.billing || []);
       setPaymentData(response.data.payments || []);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -27,52 +30,60 @@ const Dashboard = () => {
   };
 
   const consumptionChart = {
-    labels: consumptionData.map((data) => data.date),
+    labels: consumptionData?.map((data) => data.date) || [],
     datasets: [
       {
         label: "Electricity Consumption (kWh)",
-        data: consumptionData.map((data) => data.usage),
+        data: consumptionData?.map((data) => data.usage) || [],
         backgroundColor: "rgba(54, 162, 235, 0.7)",
       },
     ],
   };
 
   const billingChart = {
-    labels: billingData.map((data) => data.date),
+    labels: billingData?.map((data) => data.date) || [],
     datasets: [
       {
         label: "Billing Amount (Ksh)",
-        data: billingData.map((data) => data.amount),
+        data: billingData?.map((data) => data.amount) || [],
         backgroundColor: "rgba(255, 99, 132, 0.7)",
       },
     ],
   };
 
   const paymentChart = {
-    labels: paymentData.map((data) => data.date),
+    labels: paymentData?.map((data) => data.date) || [],
     datasets: [
       {
         label: "Payments Made (Ksh)",
-        data: paymentData.map((data) => data.status === "purchased" ? data.amount : 0),
+        data: paymentData?.map((data) =>
+          data.status === "purchased" ? data.amount : 0
+        ) || [],
         backgroundColor: "rgba(75, 192, 192, 0.7)",
       },
       {
         label: "Pending Payments (Ksh)",
-        data: paymentData.map((data) => data.status === "pending" ? data.amount : 0),
+        data: paymentData?.map((data) =>
+          data.status === "pending" ? data.amount : 0
+        ) || [],
         backgroundColor: "rgba(255, 159, 64, 0.7)",
       },
     ],
   };
 
   const cumulativePaymentChart = {
-    labels: paymentData.map((data) => data.date),
+    labels: paymentData?.map((data) => data.date) || [],
     datasets: [
       {
         label: "Cumulative Payments (Ksh)",
-        data: paymentData.reduce((acc, data, index) => {
-          const previous = index === 0 ? 0 : acc[index - 1];
-          return [...acc, previous + (data.status === "purchased" ? data.amount : 0)];
-        }, []),
+        data:
+          paymentData?.reduce((acc, data, index) => {
+            const previous = index === 0 ? 0 : acc[index - 1];
+            return [
+              ...acc,
+              previous + (data.status === "purchased" ? data.amount : 0),
+            ];
+          }, []) || [],
         backgroundColor: "rgba(153, 102, 255, 0.7)",
       },
     ],
@@ -115,4 +126,5 @@ const Dashboard = () => {
     </div>
   );
 };
+
 export default Dashboard;
