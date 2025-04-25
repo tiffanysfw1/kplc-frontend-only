@@ -32,10 +32,24 @@ const Login = () => {
     return emailRegex.test(email);
   };
 
-  // Ensure error is string before rendering
+  // Improved error handling
   const getErrorMessage = (err) => {
+    // Check if the error is a string
     if (typeof err === "string") return err;
-    if (typeof err === "object" && err.message) return err.message;
+
+    // Check if it's an object, and it has a message field
+    if (typeof err === "object") {
+      if (err.message) return `❌ ${err.message}`;
+
+      // Check if error contains 'code' and 'message'
+      if (err.code && err.message) {
+        return `❌ ${err.message} (Code: ${err.code})`;
+      }
+
+      // Fallback: stringify the error if we can't extract a message
+      return JSON.stringify(err);
+    }
+
     return "❌ An unexpected error occurred.";
   };
 
