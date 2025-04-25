@@ -7,7 +7,8 @@ import "chart.js/auto";
 import "./Dashboard.css";
 
 // ✅ Define your API base URL here
-const apiUrl = "http://localhost:5000"; // Replace with your actual backend URL
+const apiUrl = "https://kplc-smart-billing.onrender.com";
+
 
 const Dashboard = () => {
   const [consumptionData, setConsumptionData] = useState([]);
