@@ -12,6 +12,8 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
+  const apiUrl = process.env.REACT_APP_API_URL; // ✅ Use environment variable
+
   // Load remembered credentials
   useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
@@ -45,15 +47,13 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+      const response = await axios.post(`${apiUrl}/api/auth/login`, { email, password });
 
       console.log("✅ Login successful!", response.data);
 
-      // Save token in localStorage
       localStorage.setItem("authToken", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user)); // Store user details
+      localStorage.setItem("user", JSON.stringify(response.data.user));
 
-      // Handle "Remember Me"
       if (rememberMe) {
         localStorage.setItem("rememberedEmail", email);
         localStorage.setItem("rememberedPassword", password);
@@ -62,7 +62,6 @@ const Login = () => {
         localStorage.removeItem("rememberedPassword");
       }
 
-      // ✅ Redirect to Dashboard
       navigate("/dashboard");
     } catch (error) {
       console.error("❌ Login error:", error.response?.data || error.message);
@@ -117,7 +116,7 @@ const Login = () => {
         <div className="login-links">
           <a href="/forgot-password" className="forgot-password">Forgot Password?</a>
           <p>
-            Don't have an account? <a href="/register" className="sign-up-link">Sign Up</a>
+            Don’t have an account? <a href="/register" className="sign-up-link">Sign Up</a>
           </p>
           <i>Copyright © KPLC Billing System 2025.</i>
         </div>
@@ -125,4 +124,5 @@ const Login = () => {
     </div>
   );
 };
+
 export default Login;
