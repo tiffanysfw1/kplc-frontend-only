@@ -32,6 +32,13 @@ const Login = () => {
     return emailRegex.test(email);
   };
 
+  // Ensure error is string before rendering
+  const getErrorMessage = (err) => {
+    if (typeof err === "string") return err;
+    if (typeof err === "object" && err.message) return err.message;
+    return "❌ An unexpected error occurred.";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -65,7 +72,8 @@ const Login = () => {
       navigate("/dashboard");
     } catch (error) {
       console.error("❌ Login error:", error.response?.data || error.message);
-      setError(error.response?.data?.error || "❌ Incorrect email or password.");
+      const message = getErrorMessage(error.response?.data?.error);
+      setError(message);
     }
   };
 
