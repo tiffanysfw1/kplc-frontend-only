@@ -44,7 +44,6 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-container">kplc-smart-billing
       <div className="register-box">
         <h2>🔒 Sign Up</h2>
         <form onSubmit={handleRegister}>
@@ -61,7 +60,7 @@ const Register = () => {
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
       </div>
-    </div>
+    
   );
 };
 

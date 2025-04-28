@@ -17,27 +17,55 @@ const BuyTokens = () => {
   const [token, setToken] = useState("");
   const [isBankPaid, setIsBankPaid] = useState(false);
 
-  const banks = ["Equity Bank", "KCB Bank", "Cooperative Bank", "ABSA Bank", "Standard Chartered"];
-  const counties = [
-    "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Kiambu", "Machakos", "Uasin Gishu", "Meru", "Kakamega", "Embu",
-    "Nyeri", "Kisii", "Bungoma", "Narok", "Kericho", "Homa Bay", "Kitui", "Laikipia", "Kilifi",
-    "Baringo", "Vihiga", "Siaya", "Mandera", "Marsabit", "Samburu", "Kwale", "Turkana", "Garissa", "Tana River",
-    "Elgeyo Marakwet", "Trans Nzoia", "Wajir", "West Pokot", "Lamu", "Tharaka Nithi", "Taita Taveta", "Isiolo",
-    "Nandi", "Bomet", "Busia", "Migori", "Kajiado", "Nyandarua", "Makueni", "Nyamira", "Taveta"
-  ];
+  const banks = [/* your banks array */];
+  const counties = [/* your counties array */];
 
   useEffect(() => {
-    // This function will be triggered every 10 minutes
     const interval = setInterval(() => {
-      // Trigger the form update
-      console.log("Updating form..."); // Replace with your actual logic to refresh the form.
-      // You can set a state here that triggers the component to re-render or update.
       setMessage("Form updated at: " + new Date().toLocaleTimeString());
-    }, 600000); // 600000ms = 10 minutes
-
-    // Cleanup the interval when the component is unmounted or payment method is reset
+    }, 600000);
     return () => clearInterval(interval);
-  }, [paymentMethod]); // Depend on paymentMethod to start a new interval when it changes
+  }, [paymentMethod]);
+
+  const generateFormattedToken = () => {
+    const rawToken = Array.from({ length: 20 }, () => Math.floor(Math.random() * 10)).join('');
+    return rawToken.match(/.{1,4}/g).join('-');
+  };
+
+  const pollPaymentStatus = async (meterNumber) => {
+    let attempts = 0;
+    const maxAttempts = 12; // poll for 1 minute (every 5 seconds)
+
+    while (attempts < maxAttempts) {
+      try {
+        const response = await axios.get(`http://localhost:5000/mpesa/payment-status?meterNumber=${meterNumber}`);
+        const data = response.data;
+
+        if (data.success) {
+          const formattedToken = generateFormattedToken();
+          setToken(`🔋 Token: ${formattedToken}`);
+          setMessage("✅ Payment successful and token generated.");
+          setIsLoading(false);
+          return;
+        } else if (data.failed) {
+          setMessage("⚠️ Payment failed. Try again.");
+          setIsLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Polling error:", error);
+        setMessage("⚠️ Error checking payment status.");
+        setIsLoading(false);
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 5000)); // wait 5 seconds
+      attempts++;
+    }
+
+    setMessage("⚠️ Payment timeout. Try again.");
+    setIsLoading(false);
+  };
 
   const handlePurchase = async (e) => {
     e.preventDefault();
@@ -45,20 +73,18 @@ const BuyTokens = () => {
     setToken("");
     setIsLoading(true);
 
-    // Validation for M-PESA and Bank Payment
     if (!meterNumber || meterNumber.length !== 11) {
       setMessage("⚠️ Meter number must be exactly 11 digits.");
       setIsLoading(false);
       return;
     }
-
-    if (!amount || parseInt(amount) < 10) {
-      setMessage("⚠️ Minimum amount is Ksh 10.");
+    if (!amount) {
+      setMessage("⚠️ Amount is required.");
       setIsLoading(false);
       return;
     }
 
-    if (paymentMethod === "mpesa" && (!phoneNumber || phoneNumber.length !== 10)) {
+    if (paymentMethod === "mpesa" && !phoneNumber) {
       setMessage("⚠️ Enter a valid 10-digit phone number.");
       setIsLoading(false);
       return;
@@ -70,18 +96,29 @@ const BuyTokens = () => {
       return;
     }
 
-    // Simulate M-PESA Payment and Token Generation
     if (paymentMethod === "mpesa") {
-      setTimeout(() => {
-        setMessage("✅ payment confirmed. Token has been generated.");
-        const generatedToken = `🔋 Token: ${Math.floor(100000000 + Math.random() * 900000000)}`;
-        setToken(generatedToken);
+      try {
+        const response = await axios.post("http://localhost:5000/mpesa/stk-push", {
+          phoneNumber,
+          amount,
+          meterNumber,
+        });
+
+        if (response.data.pending) {
+          setMessage("📲 Awaiting payment confirmation...");
+          pollPaymentStatus(meterNumber);
+        } else {
+          setMessage("📲 Awaiting payment confirmation...");
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error(error);
+        setMessage("⚠️ Error initiating payment.");
         setIsLoading(false);
-      }, 2000); // Simulate a 2-second delay
-      return; // Exit to prevent further processing
+      }
+      return;
     }
 
-    // Proceed with PayPal or Bank transfer as usual
     if (paymentMethod === "paypal") {
       const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=tiffanyjemosop@gmail.com&amount=${amount}&currency_code=USD&item_name=Electricity+Tokens`;
       window.location.href = paypalUrl;
@@ -100,9 +137,9 @@ const BuyTokens = () => {
           selectedCounty,
         });
         setMessage(response.data.message || "✅ Payment instructions sent.");
-        setIsLoading(false);
       } catch (error) {
         setMessage(error.response?.data?.error || "⚠️ Error processing payment.");
+      } finally {
         setIsLoading(false);
       }
     }
@@ -111,8 +148,8 @@ const BuyTokens = () => {
   const handleBankPaymentConfirmation = () => {
     setIsBankPaid(true);
     setTimeout(() => {
-      const generatedToken = `🔋 Token: ${Math.floor(100000000 + Math.random() * 900000000)}`;
-      setToken(generatedToken);
+      const formattedToken = generateFormattedToken();
+      setToken(`🔋 Token: ${formattedToken}`);
     }, 2000);
   };
 
@@ -139,7 +176,6 @@ const BuyTokens = () => {
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              min="10"
               required
             />
 
@@ -161,13 +197,6 @@ const BuyTokens = () => {
                   placeholder="Enter 10-digit Safaricom number"
                   required
                 />
-                <div className="mpesa-instructions">
-                  <p><strong>💡 Instructions:</strong></p>
-                  <p>Go to M-PESA → Lipa na M-PESA → Buy Goods</p>
-                  <p><strong>Till Number:</strong> <code>4874240</code></p>
-                  <p><strong>Account:</strong> Your Meter Number</p>
-                  <p><strong>Amount:</strong> Ksh {amount || "___"}</p>
-                </div>
               </>
             )}
 

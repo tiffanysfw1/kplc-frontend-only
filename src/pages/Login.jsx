@@ -4,6 +4,9 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import "./Auth.css";
 
+// Correct way to load API URL based on environment
+const apiUrl = import.meta.env.VITE_REACT_APP_API_URL || "http://localhost:3000"; 
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,8 +14,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
-
-  const apiUrl = process.env.REACT_APP_API_URL; // ✅ Use environment variable
 
   // Load remembered credentials
   useEffect(() => {
@@ -34,19 +35,13 @@ const Login = () => {
 
   // Improved error handling
   const getErrorMessage = (err) => {
-    // Check if the error is a string
     if (typeof err === "string") return err;
 
-    // Check if it's an object, and it has a message field
     if (typeof err === "object") {
       if (err.message) return `❌ ${err.message}`;
-
-      // Check if error contains 'code' and 'message'
       if (err.code && err.message) {
         return `❌ ${err.message} (Code: ${err.code})`;
       }
-
-      // Fallback: stringify the error if we can't extract a message
       return JSON.stringify(err);
     }
 

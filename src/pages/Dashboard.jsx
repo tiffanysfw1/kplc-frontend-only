@@ -7,7 +7,7 @@ import "chart.js/auto";
 import "./Dashboard.css";
 
 // ✅ Define your API base URL here
-const apiUrl = "https://kplc-smart-billing.onrender.com";
+const apiUrl = "http://localhost:3000";
 
 
 const Dashboard = () => {
